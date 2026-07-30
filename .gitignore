@@ -1,0 +1,22 @@
+# Secrets & Credentials
+ghpat.txt
+
+# Documentation & Assignment Documents
+*.pdf
+*.docx
+Digital Assignment 1.docx
+phryctoria.pdf
+
+# Dependencies & Build Outputs
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+
+# System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,122 @@
+{
+  "info": {
+    "_postman_id": "c9a51d6a-3a42-42df-817e-7bbfe9a2acbb",
+    "name": "Phryctoria - Telemetry & Alerting API",
+    "description": "Complete Postman API Collection for Phryctoria Distributed Log Aggregator & Alerting Engine (Digital Assignment 1).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "health"]
+        },
+        "description": "Checks the operational health and buffer depth of the Phryctoria ingestion server."
+      }
+    },
+    {
+      "name": "2. Ingest Telemetry Payload",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"service\": \"payment-gateway\",\n  \"level\": \"ERROR\",\n  \"message\": \"Stripe API connection timeout on endpoint /v1/charges\",\n  \"latency_ms\": 1250,\n  \"http_status\": 500\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/telemetry/ingest",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "telemetry", "ingest"]
+        },
+        "description": "Enqueues a high-throughput JSON log payload into the Redis buffer queue."
+      }
+    },
+    {
+      "name": "3. Search & Query Ingested Logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/logs?service=All&level=ERROR",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "logs"],
+          "query": [
+            {
+              "key": "service",
+              "value": "All"
+            },
+            {
+              "key": "level",
+              "value": "ERROR"
+            }
+          ]
+        },
+        "description": "Search and filter logs by service source and severity level."
+      }
+    },
+    {
+      "name": "4. Get Percentile Analytics (p50, p95, p99)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/analytics/percentiles",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "analytics", "percentiles"]
+        },
+        "description": "Computes real-time latency percentiles (p50, p95, p99) in milliseconds."
+      }
+    },
+    {
+      "name": "5. List Alerts & Active Incidents",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/alerts",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "alerts"]
+        },
+        "description": "Fetches configured threshold rules and active incident feed."
+      }
+    },
+    {
+      "name": "6. Create Alert Threshold Rule",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Payment Gateway High Error Breach\",\n  \"service\": \"payment-gateway\",\n  \"metric\": \"500_error_count\",\n  \"threshold\": 3,\n  \"window_seconds\": 60\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/alerts/rules",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "alerts", "rules"]
+        },
+        "description": "Defines a new automated threshold alert rule."
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    }
+  ]
+}

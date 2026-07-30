@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: phryctoria-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: phryctoria
+      POSTGRES_PASSWORD: phryctoria_password
+      POSTGRES_DB: phryctoria_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phryctoria -d phryctoria_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: phryctoria-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: phryctoria-server
+    restart: always
+    environment:
+      PORT: 5000
+      DATABASE_URL: postgres://phryctoria:phryctoria_password@postgres:5432/phryctoria_db
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: phryctoria-worker
+    restart: always
+    environment:
+      SERVER_URL: http://server:5000
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - server
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: phryctoria-client
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://localhost:5000
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:
